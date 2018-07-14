@@ -1,0 +1,17 @@
+load("//tensorflow:tensorflow.bzl", "clean_dep")
+
+def if_ngraph(a):
+    """Shorthand for select()'ing on whether we're building with nGraph support.
+
+    Returns a select statement which evaluates to if_true if we're building
+    with nGraph.  Otherwise, the select statement evaluates to if_false.
+
+    """
+    print("********* IF NGRAPH ************\n")
+    ret_val = select({
+        clean_dep("//tensorflow:with_ngraph_support"): a,
+        "//conditions:default": []
+    })
+    print("IF NGRAPH", ret_val, "\n")
+
+    return ret_val

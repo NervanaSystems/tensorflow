@@ -10,6 +10,10 @@ load(
     "//third_party/mkl:build_defs.bzl",
     "if_mkl",
 )
+load(
+    "//third_party/ngraph:build_defs.bzl",
+    "if_ngraph",
+)
 
 # Appends a suffix to a list of deps.
 def tf_deps(deps, suffix):

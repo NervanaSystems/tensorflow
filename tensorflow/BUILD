@@ -408,6 +408,14 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+# This flag is set from the configure step when the user selects with nGraph option.
+# By default it should be false
+config_setting(
+    name = "with_ngraph_support",
+    values = {"define": "with_ngraph_support=true"},
+    visibility = ["//visibility:public"],
+)
+
 package_group(
     name = "internal",
     packages = [

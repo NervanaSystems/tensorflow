@@ -803,6 +803,28 @@ def tf_workspace(path_prefix="", tf_repo_name=""):
       strip_prefix = "rules_android-0.1.1",
   )
 
+  tf_http_archive(
+      name = "ngraph_core",
+      urls = [
+          "https://mirror.bazel.build/github.com/NervanaSystems/ngraph/archive/v0.4.0.tar.gz",
+          "https://github.com/NervanaSystems/ngraph/archive/v0.4.0.tar.gz",
+      ],
+      sha256 = "7f0028009e39019b0338e91d794afabb38fc8158573cfc9513b515800574353a",
+      strip_prefix = "ngraph-0.4.0",
+      build_file = clean_dep("//third_party/ngraph:ngraph_core.BUILD"),
+  )
+
+  tf_http_archive(
+      name = "ngraph_tf",
+      urls = [
+          "https://mirror.bazel.build/github.com/NervanaSystems/ngraph-tf/archive/v0.1.0.tar.gz",
+          "https://github.com/NervanaSystems/ngraph-tf/archive/v0.1.0.tar.gz",
+      ],
+      sha256 = "f260b260a37720dd2bff0373b4372315b83ff3b336750ac6c0f74c04b84e8bdf",
+      strip_prefix = "ngraph-tf-0.1.0",
+      build_file = clean_dep("//third_party/ngraph:ngraph_tf.BUILD"),
+  )
+
   ##############################################################################
   # BIND DEFINITIONS
   #

@@ -150,6 +150,10 @@ load(
     "//third_party/mkl:build_defs.bzl",
     "if_mkl",
 )
+load(
+    "//third_party/ngraph:build_defs.bzl",
+    "if_ngraph",
+)
 
 exports_files(["ops/ops.pbtxt"])
 
@@ -2502,7 +2506,13 @@ tf_cuda_library(
             "//third_party/mkl:intel_binary_blob",
             "@mkl_dnn",
         ],
-    ),
+    ) + if_ngraph(
+        [
+            "@ngraph_core",
+            "@ngraph_tf"
+        ],
+    ), 
+
     alwayslink = 1,
 )
 
