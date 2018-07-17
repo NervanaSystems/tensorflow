@@ -804,15 +804,28 @@ def tf_workspace(path_prefix="", tf_repo_name=""):
   )
 
   tf_http_archive(
-      name = "ngraph_core",
+      name = "ngraph",
       urls = [
           "https://mirror.bazel.build/github.com/NervanaSystems/ngraph/archive/v0.4.0.tar.gz",
           "https://github.com/NervanaSystems/ngraph/archive/v0.4.0.tar.gz",
       ],
       sha256 = "7f0028009e39019b0338e91d794afabb38fc8158573cfc9513b515800574353a",
       strip_prefix = "ngraph-0.4.0",
-      build_file = clean_dep("//third_party/ngraph:ngraph_core.BUILD"),
+      build_file = clean_dep("//third_party/ngraph:ngraph.BUILD"),
   )
+
+  tf_http_archive(
+      name = "nlohmann_json_arcive",
+      urls = [
+          "https://mirror.bazel.build/github.com/nlohmann/json/archive/v3.1.1.tar.gz",
+          "https://github.com/nlohmann/json/archive/v3.1.1.tar.gz",
+      ],
+      sha256 = "json-3.1.1",
+      strip_prefix = "",
+      #build_file = clean_dep("//third_party/ngraph:ngraph.BUILD"),
+  )
+
+
 
   tf_http_archive(
       name = "ngraph_tf",

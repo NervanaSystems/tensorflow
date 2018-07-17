@@ -2508,7 +2508,7 @@ tf_cuda_library(
         ],
     ) + if_ngraph(
         [
-            "@ngraph_core",
+            #"@ngraph",
             "@ngraph_tf"
         ],
     ), 

@@ -37,7 +37,7 @@ cc_library(
     ],
     #includes = ["include"],
     deps = [
-        "@org_tensorflow//tenorflow/core:framework"
+        "@org_tensorflow//tensorflow/core:framework"
     ],
     visibility = ["//visibility:public"],
     alwayslink=1
