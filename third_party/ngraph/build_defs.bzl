@@ -1,4 +1,5 @@
-load("//tensorflow:tensorflow.bzl", "clean_dep")
+def clean_dep(dep):
+  return str(Label(dep))
 
 def if_ngraph(a):
     """Shorthand for select()'ing on whether we're building with nGraph support.

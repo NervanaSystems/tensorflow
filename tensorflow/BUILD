@@ -548,7 +548,7 @@ tf_cc_shared_object(
         "//tensorflow/c:version_script.lds",
         "//tensorflow/c/eager:c_api",
         "//tensorflow/core:tensorflow",
-    ],
+    ]
 )
 
 tf_cc_shared_object(
@@ -610,4 +610,29 @@ py_library(
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
     deps = ["//tensorflow/python:no_contrib"],
+)
+
+# load(
+#     "//third_party/ngraph:build_defs.bzl",
+#     "if_ngraph",
+# )
+
+tf_cc_shared_object(
+    name = "libngraph_device.so",
+    # linkopts = select({
+    #     "//tensorflow:darwin": [
+    #         "-Wl,-exported_symbols_list",  # This line must be directly followed by the exported_symbols.lds file
+    #         "$(location //tensorflow:tf_exported_symbols.lds)",
+    #     ],
+    #     "//tensorflow:windows": [],
+    #     "//tensorflow:windows_msvc": [],
+    #     "//conditions:default": [
+    #         "-z defs",
+    #         "-Wl,--version-script",  #  This line must be directly followed by the version_script.lds file
+    #         "$(location //tensorflow:tf_version_script.lds)",
+    #     ],
+    # }),
+    deps = [
+        "@ngraph_tf//:ngraph_tf"
+    ],
 )
