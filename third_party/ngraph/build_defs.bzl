@@ -8,11 +8,9 @@ def if_ngraph(a):
     with nGraph.  Otherwise, the select statement evaluates to if_false.
 
     """
-    print("********* IF NGRAPH ************\n")
     ret_val = select({
         clean_dep("//tensorflow:with_ngraph_support"): a,
         "//conditions:default": []
     })
-    print("IF NGRAPH", ret_val, "\n")
 
     return ret_val

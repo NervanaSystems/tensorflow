@@ -19,7 +19,7 @@ limitations under the License.
 #include <vector>
 #include "tensorflow/core/common_runtime/device_factory.h"
 #include "tensorflow/core/framework/allocator.h"
-//#include "tensorflow/core/lib/io/path.h"
+#include "tensorflow/core/lib/io/path.h"
 #include "tensorflow/core/public/session_options.h"
 
 namespace tensorflow {
@@ -52,55 +52,60 @@ REGISTER_LOCAL_DEVICE_FACTORY("CPU", ThreadPoolDeviceFactory, 60);
 string GetTensorflowRoot() {
   string executable_path = Env::Default()->GetExecutablePath();
 
-  // // Check to see if this is a Python executable
-  // auto executable_name = io::Basename(executable_path);
-  // if (!StringPiece(str_util::Lowercase(executable_name))
-  //          .find("python")) {
-  //   std::cout << "TensorFlow is loaded from Python" << std::endl;
-  //   // Now run the executable and get the Python Site Packages
-  //   FILE* pipe =
-  //       popen((executable_path + " -c \"from distutils.sysconfig import "
-  //                                "get_python_lib; print(get_python_lib())\"")
-  //                 .c_str(),
-  //             "r");
-  //   if (!pipe) {
-  //     LOG(FATAL) << "Couldn't launch program: " << executable_path;
-  //   }
+  // Check to see if this is a Python executable
+  auto executable_name = io::Basename(executable_path);
+  VLOG(1) << "Executable: " << executable_name;
 
-  //   char buffer[256];
-  //   int len = 0;
-  //   string python_site_pkg_dir;
-  //   while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-  //     len += sizeof(buffer);
-  //     if (len > PATH_MAX) {
-  //       // Python path too long - something is wrong
-  //       LOG(FATAL) << "Path too long. Abort";
-  //     }
-  //     python_site_pkg_dir += buffer;
-  //   }
+  if (std::string(executable_name)
+          .compare(0, std::string("python").length(), "python") == 0) {
+    // if (!StringPiece(str_util::Lowercase(executable_name)).find("python")) {
+    VLOG(1) << "TensorFlow is loaded from Python" << std::endl;
+    // Now run the executable and get the Python Site Packages
+    FILE* pipe =
+        popen((executable_path + " -c \"from distutils.sysconfig import "
+                                 "get_python_lib; print(get_python_lib())\"")
+                  .c_str(),
+              "r");
+    if (!pipe) {
+      LOG(FATAL) << "Couldn't launch program: " << executable_path;
+    }
 
-  //   str_util::StripTrailingWhitespace(&python_site_pkg_dir);
-  //   string tf_install_root = python_site_pkg_dir + "/tensorflow";
-  //   return tf_instal_root;
-  // }
+    char buffer[256];
+    int len = 0;
+    string python_site_pkg_dir;
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+      len += sizeof(buffer);
+      if (len > PATH_MAX) {
+        // Python path too long - something is wrong
+        LOG(FATAL) << "Path too long. Abort";
+      }
+      python_site_pkg_dir += buffer;
+    }
+
+    str_util::StripTrailingWhitespace(&python_site_pkg_dir);
+    string tf_install_root = python_site_pkg_dir + "/tensorflow";
+    return tf_install_root;
+  }
 
   // We are getting loaded by a C++ app?
   return executable_path;
-}
+}  // namespace tensorflow
 
 bool InitNGraph() {
   // Locate the nGraph device
   auto tf_root_dir = GetTensorflowRoot();
-  // std::cout << "TensorFlow System root: " << tf_root_dir << std::endl;
-  VLOG(0) << "TensorFlow System root: " << tf_root_dir;
+
   // Load it
-  // void* handle;
-  // auto result =
-  //     Env::Default()->LoadLibrary(lib_path.c_str(), &handle);
-  // if (result != xla::Status::OK()) {
-  //   LOG(WARNING) << "Cannot load Plugin library: " << result.error_message();
-  //   return false;
-  // }
+  string lib_path(
+      "/localdisk/avijitch/projects/upstream/tf-fork/lib/python2.7/"
+      "site-packages/tensorflow/libngraph_device.so");
+  VLOG(1) << "Loading file: " << lib_path;
+  void* handle;
+  auto result = Env::Default()->LoadLibrary(lib_path.c_str(), &handle);
+  if (result != Status::OK()) {
+    VLOG(1) << "Cannot load Plugin library: " << result.error_message();
+    return false;
+  }
 }
 
 volatile bool ngraph_initialized = InitNGraph();

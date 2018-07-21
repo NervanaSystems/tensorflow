@@ -2440,6 +2440,7 @@ cc_header_only_library(
     deps = [
         ":core_cpu_lib",
     ],
+    visibility = ["//visibility:public"],
 )
 
 tf_cuda_library(
