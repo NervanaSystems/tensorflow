@@ -63,5 +63,4 @@ cc_library(
         "-I external/ngraph/src",
     ],
     visibility = ["//visibility:public"],
-    alwayslink=1
 )
