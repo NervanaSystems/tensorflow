@@ -79,3 +79,9 @@ new_http_archive(
         "http://download.tensorflow.org/models/speech_commands_v0.01.zip",
     ],
 )
+
+new_local_repository(
+    name = "ngraph_tf",
+    path="../ngraph-tf",
+    build_file = "//third_party/ngraph:ngraph_tf.BUILD",
+)

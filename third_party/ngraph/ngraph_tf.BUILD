@@ -29,6 +29,7 @@ cc_library(
         "src/ngraph_cluster.cc",
         "src/ngraph_cluster_manager.h",
         "src/ngraph_cluster_manager.cc",
+        "src/ngraph_confirm_pass.cc",
         "src/ngraph_device.cc",
         "src/ngraph_encapsulate_op.cc",
         "src/ngraph_encapsulate_pass.cc",

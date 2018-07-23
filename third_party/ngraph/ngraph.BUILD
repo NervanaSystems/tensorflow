@@ -10,6 +10,31 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "ngraph_cpu_codegen",
+    srcs = glob([
+            "src/ngraph/codegen/code_writer.hpp",
+            "src/ngraph/codegen/code_writer.cpp",
+            "src/ngraph/codegen/compiler.hpp",
+            "src/ngraph/codegen/compiler.cpp",
+            "src/ngraph/codegen/execution_engine.hpp",
+            "src/ngraph/codegen/execution_engine.cpp",
+        ]),
+    #hdrs = glob(["src/ngraph/**/*.hpp"]),
+    deps = [
+        "@mkl_dnn",
+        "@eigen_archive//:eigen",
+        "@llvm//:core",
+        "@llvm//:support",
+    ],
+    copts = [
+        "-I external/ngraph/src",
+        '-D SHARED_LIB_EXT=\\".so\\"',
+        '-D NGRAPH_VERSION=\\"0.5.0\\"',
+    ],
+    visibility = ["//visibility:public"],
+    alwayslink=1
+)
 
 cc_library(
     name = "ngraph_core",
@@ -21,8 +46,14 @@ cc_library(
             "src/ngraph/descriptor/layout/*.cpp",
             "src/ngraph/op/*.cpp",
             "src/ngraph/op/util/*.cpp",
+            "src/ngraph/pattern/*.cpp",
+            "src/ngraph/pattern/*.hpp",
+            "src/ngraph/pass/*.cpp",
+            "src/ngraph/pass/*.hpp",
             "src/ngraph/runtime/*.cpp",
             "src/ngraph/type/*.cpp",
+            "src/ngraph/runtime/interpreter/*.cpp",
+            "src/ngraph/runtime/interpreter/*.hpp",
         ]),
     hdrs = glob(["src/ngraph/**/*.hpp"]),
     deps = [
