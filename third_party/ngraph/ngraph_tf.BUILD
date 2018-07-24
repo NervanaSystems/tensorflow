@@ -10,6 +10,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+load(
+    "@org_tensorflow//tensorflow:tensorflow.bzl",
+    "tf_cc_test"
+)
+
 cc_library(
     name = "ngraph_libs_linux",
     srcs = [
@@ -64,4 +69,29 @@ cc_library(
         "-I external/ngraph/src",
     ],
     visibility = ["//visibility:public"],
+)
+
+tf_cc_test(
+    name = "ngraph_tf_tests",
+    size = "small",
+    srcs = [
+        "test/tf_exec.cpp",
+        "test/main.cpp",
+    ],
+    deps = [
+        ":ngraph_tf",
+        "@com_google_googletest//:gtest",
+        # "@org_tensorflow//tensorflow/core:test",
+        "@org_tensorflow//tensorflow/cc:cc_ops",
+        # "@org_tensorflow//tensorflow/cc:sendrecv_ops",        
+        "@org_tensorflow//tensorflow/cc:client_session",
+        "@org_tensorflow//tensorflow/core:tensorflow",
+    ],
+    extra_copts = [
+        "-fexceptions ",
+        "-D NGRAPH_EMBEDDED_IN_TENSORFLOW=1",
+        "-I external/ngraph_tf/src",
+        "-I external/ngraph_tf/logging",
+        "-I external/ngraph/src",
+    ],
 )
