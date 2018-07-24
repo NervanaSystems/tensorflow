@@ -67,6 +67,7 @@ cc_library(
         "-I external/ngraph_tf/src",
         "-I external/ngraph_tf/logging",
         "-I external/ngraph/src",
+        "-D NGRAPH_EMBEDDED_IN_TENSORFLOW=1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -81,9 +82,7 @@ tf_cc_test(
     deps = [
         ":ngraph_tf",
         "@com_google_googletest//:gtest",
-        # "@org_tensorflow//tensorflow/core:test",
         "@org_tensorflow//tensorflow/cc:cc_ops",
-        # "@org_tensorflow//tensorflow/cc:sendrecv_ops",        
         "@org_tensorflow//tensorflow/cc:client_session",
         "@org_tensorflow//tensorflow/core:tensorflow",
     ],
