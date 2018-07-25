@@ -825,27 +825,16 @@ def tf_workspace(path_prefix="", tf_repo_name=""):
       build_file = clean_dep("//third_party/ngraph:nlohmann_json.BUILD"),
   )
 
-#   tf_http_archive(
-#       name = "ngraph_llvm_lib",
-#       urls = [
-#           "https://mirror.bazel.build/releases.llvm.org/5.0.1/clang+llvm-5.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz",
-#           "http://releases.llvm.org/5.0.1/clang+llvm-5.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz",
-#       ],
-#       sha256 = "005f21861cd2953138df7cf511f1552ef7041bafb7cfc4b172264b7ff5fe09b4",
-#       strip_prefix = "clang+llvm-5.0.1-x86_64-linux-gnu-ubuntu-16.04",
-#       build_file = clean_dep("//third_party/ngraph:llvm_prebuilt.BUILD"),
-#   )
-
-#   tf_http_archive(
-#       name = "ngraph_tf",
-#       urls = [
-#           "https://mirror.bazel.build/github.com/NervanaSystems/ngraph-tf/archive/v0.2.0.tar.gz",
-#           "https://github.com/NervanaSystems/ngraph-tf/archive/v0.2.0.tar.gz"
-#       ],
-#       sha256 = "c09a35d0a605afeeaf5aad81181a6abc7e9b9e39312e8fdfbae20cbd8eb58523",
-#       strip_prefix = "ngraph-tf-0.2.0",
-#       build_file = clean_dep("//third_party/ngraph:ngraph_tf.BUILD"),
-#   )
+  tf_http_archive(
+      name = "ngraph_tf",
+      urls = [
+          "https://mirror.bazel.build/github.com/NervanaSystems/ngraph-tf/archive/v0.3.0-rc0.tar.gz",
+          "https://github.com/NervanaSystems/ngraph-tf/archive/v0.3.0-rc0.tar.gz"
+      ],
+      sha256 = "c09a35d0a605afeeaf5aad81181a6abc7e9b9e39312e8fdfbae20cbd8eb58523",
+      strip_prefix = "ngraph-tf-0.3.0-rc0",
+      build_file = clean_dep("//third_party/ngraph:ngraph_tf.BUILD"),
+  )
 
   ##############################################################################
   # BIND DEFINITIONS

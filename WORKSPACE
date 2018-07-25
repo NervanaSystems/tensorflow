@@ -80,8 +80,3 @@ new_http_archive(
     ],
 )
 
-new_local_repository(
-    name = "ngraph_tf",
-    path="../ngraph-tf",
-    build_file = "//third_party/ngraph:ngraph_tf.BUILD",
-)
