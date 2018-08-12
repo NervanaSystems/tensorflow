@@ -3174,6 +3174,7 @@ cuda_py_test(
         ":partitioned_variables",
         ":variable_scope",
         ":variables",
+        "@absl_py//absl/testing:parameterized",
         "//third_party/py/numpy",
     ],
     tags = ["no_windows"],
@@ -3809,7 +3810,7 @@ tf_py_wrap_cc(
          tf_additional_plugin_deps() +
          tf_additional_verbs_deps() +
          tf_additional_mpi_deps() +
-         tf_additional_gdr_deps())+ 
+         tf_additional_gdr_deps()) + 
          if_ngraph(["@ngraph_tf//:ngraph_tf"])
 )
 

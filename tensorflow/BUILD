@@ -23,6 +23,7 @@ load(
     "//tensorflow/python/tools/api/generator:api_gen.bzl",
     "gen_api_init_files",  # @unused
 )
+load("//third_party/ngraph:build_defs.bzl", "if_ngraph")
 
 # Config setting used when building for products
 # which requires restricted licenses to be avoided.
@@ -441,8 +442,6 @@ load(
     "if_mkl",
 )
 
-load("//third_party/ngraph:build_defs.bzl", "if_ngraph")
-
 filegroup(
     name = "intel_binary_blob",
     data = if_mkl(
@@ -450,11 +449,6 @@ filegroup(
             "//third_party/mkl:intel_binary_blob",
         ],
     ),
-)
-
-filegroup(
-    name = "docs_src",
-    data = glob(["docs_src/**/*.md"]),
 )
 
 cc_library(
@@ -600,6 +594,7 @@ exports_files(
 gen_api_init_files(
     name = "tensorflow_python_api_gen",
     srcs = ["api_template.__init__.py"],
+    api_version = 1,
     root_init_template = "api_template.__init__.py",
 )
 
