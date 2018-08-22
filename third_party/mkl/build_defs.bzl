@@ -26,7 +26,7 @@ def if_mkl(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "//third_party/mkl:using_mkl": if_true,
+        str(Label("//third_party/mkl:using_mkl")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -42,9 +42,9 @@ def if_mkl_ml(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "//third_party/mkl_dnn:using_mkl_dnn_only":
+        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")):
         if_false,
-        "//third_party/mkl:using_mkl": if_true,
+        str(Label("//third_party/mkl:using_mkl")): if_true,
         "//conditions:default": if_false,
         })
 
@@ -59,7 +59,7 @@ def if_mkl_ml_only(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "//third_party/mkl:using_mkl_ml_only": if_true,
+        str(Label("//third_party/mkl:using_mkl_ml_only")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -76,7 +76,7 @@ def if_mkl_lnx_x64(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "//third_party/mkl:using_mkl_lnx_x64": if_true,
+        str(Label("//third_party/mkl:using_mkl_lnx_x64")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -90,11 +90,11 @@ def mkl_deps():
       inclusion in the deps attribute of rules.
     """
     return select({
-        "//third_party/mkl_dnn:using_mkl_dnn_only":
+        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")):
         ["@mkl_dnn"],
-        "//third_party/mkl:using_mkl_ml_only":
+        str(Label("//third_party/mkl:using_mkl_ml_only")):
         ["//third_party/mkl:intel_binary_blob"],
-        "//third_party/mkl:using_mkl":
+        str(Label("//third_party/mkl:using_mkl")):
         [
             "//third_party/mkl:intel_binary_blob",
             "@mkl_dnn"
