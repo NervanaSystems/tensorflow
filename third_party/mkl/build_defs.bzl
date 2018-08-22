@@ -42,8 +42,7 @@ def if_mkl_ml(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")):
-        if_false,
+        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")): if_false,
         str(Label("//third_party/mkl:using_mkl")): if_true,
         "//conditions:default": if_false,
         })
@@ -90,16 +89,13 @@ def mkl_deps():
       inclusion in the deps attribute of rules.
     """
     return select({
-        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")):
-        ["@mkl_dnn"],
-        str(Label("//third_party/mkl:using_mkl_ml_only")):
-        ["//third_party/mkl:intel_binary_blob"],
-        str(Label("//third_party/mkl:using_mkl")):
-        [
+        str(Label("//third_party/mkl_dnn:using_mkl_dnn_only")): ["@mkl_dnn"],
+        str(Label("//third_party/mkl:using_mkl_ml_only")): ["//third_party/mkl:intel_binary_blob"],
+        str(Label("//third_party/mkl:using_mkl")): [
             "//third_party/mkl:intel_binary_blob",
-            "@mkl_dnn"
+            "@mkl_dnn",
         ],
-        "//conditions:default": []
+        "//conditions:default": [],
         })
 
 def _enable_local_mkl(repository_ctx):
