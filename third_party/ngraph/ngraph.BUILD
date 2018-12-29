@@ -108,6 +108,7 @@ cc_library(
     copts = [
         "-I external/ngraph/src",
         "-I external/nlohmann_json_lib/include/",
+        '-D SHARED_LIB_PREFIX=\\"lib\\"',
         '-D SHARED_LIB_EXT=\\".so\\"',
         '-D NGRAPH_VERSION=\\"0.11.0\\"',
         "-D NGRAPH_DEX_ONLY",
@@ -151,6 +152,7 @@ cc_library(
     copts = [
         "-I external/ngraph/src",
         "-I external/nlohmann_json_lib/include/",
+        '-D SHARED_LIB_PREFIX=\\"lib\\"',
         '-D SHARED_LIB_EXT=\\".so\\"',
         '-D NGRAPH_VERSION=\\"0.11.0\\"',
         '-D PROJECT_ROOT_DIR=\\"\\"',

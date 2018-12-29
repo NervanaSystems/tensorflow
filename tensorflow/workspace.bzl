@@ -841,33 +841,33 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
     tf_http_archive(
         name = "ngraph",
         build_file = clean_dep("//third_party/ngraph:ngraph.BUILD"),
-        sha256 = "a1780f24a1381fc25e323b4b2d08b6ef5129f42e011305b2a34dcf43a48030d5",
-        strip_prefix = "ngraph-0.11.0",
+        sha256 = "",
+        strip_prefix = "ngraph-0.11.1",
         urls = [
-            "https://mirror.bazel.build/github.com/NervanaSystems/ngraph/archive/v0.11.0.tar.gz",
-            "https://github.com/NervanaSystems/ngraph/archive/v0.11.0.tar.gz",
+            "https://mirror.bazel.build/github.com/NervanaSystems/ngraph/archive/v0.11.1.tar.gz",
+            "https://github.com/NervanaSystems/ngraph/archive/v0.11.1.tar.gz",
         ],
     )
 
     tf_http_archive(
         name = "nlohmann_json_lib",
         build_file = clean_dep("//third_party/ngraph:nlohmann_json.BUILD"),
-        sha256 = "c377963a95989270c943d522bfefe7b889ef5ed0e1e15d535fd6f6f16ed70732",
-        strip_prefix = "json-3.4.0",
+        sha256 = "e0b1fc6cc6ca05706cce99118a87aca5248bd9db3113e703023d23f044995c1d",
+        strip_prefix = "json-3.5.0",
         urls = [
-            "https://mirror.bazel.build/github.com/nlohmann/json/archive/v3.4.0.tar.gz",
-            "https://github.com/nlohmann/json/archive/v3.4.0.tar.gz",
+            "https://mirror.bazel.build/github.com/nlohmann/json/archive/v3.5.0.tar.gz",
+            "https://github.com/nlohmann/json/archive/v3.5.0.tar.gz",
         ],
     )
 
     tf_http_archive(
         name = "ngraph_tf",
         build_file = clean_dep("//third_party/ngraph:ngraph_tf.BUILD"),
-        sha256 = "742a642d2c6622277df4c902b6830d616d0539cc8cd843d6cdb899bb99e66e36",
-        strip_prefix = "ngraph-tf-0.9.0",
+        sha256 = "",
+        strip_prefix = "ngraph-tf-master",
         urls = [
-            "https://mirror.bazel.build/github.com/NervanaSystems/ngraph-tf/archive/v0.9.0.zip",
-            "https://github.com/NervanaSystems/ngraph-tf/archive/v0.9.0.zip",
+            "https://mirror.bazel.build/github.com/NervanaSystems/ngraph-tf/archive/master.zip",
+            "https://github.com/NervanaSystems/ngraph-tf/archive/master.zip",
         ],
     )
 
