@@ -20,12 +20,12 @@ from __future__ import print_function
 
 import collections
 
+from tensorflow.core.protobuf import struct_pb2
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import tensor_spec
 from tensorflow.python.platform import test
 from tensorflow.python.saved_model import nested_structure_coder
-from tensorflow.python.saved_model import struct_pb2
 
 
 class NestedStructureTest(test.TestCase):
@@ -166,6 +166,22 @@ class NestedStructureTest(test.TestCase):
     expected_tensor_spec.shape.dim.add().size = 2
     expected_tensor_spec.shape.dim.add().size = 3
     expected_tensor_spec.name = "hello"
+    expected_tensor_spec.dtype = dtypes.int64.as_datatype_enum
+    self.assertEqual(expected, encoded)
+    decoded = self._coder.decode_proto(encoded)
+    self.assertEqual(structure, decoded)
+
+  def testEncodeDecodeTensorSpecWithNoName(self):
+    structure = [tensor_spec.TensorSpec([1, 2, 3], dtypes.int64)]
+    self.assertTrue(self._coder.can_encode(structure))
+    encoded = self._coder.encode_structure(structure)
+    expected = struct_pb2.StructuredValue()
+    expected_list = expected.list_value
+    expected_tensor_spec = expected_list.values.add().tensor_spec_value
+    expected_tensor_spec.shape.dim.add().size = 1
+    expected_tensor_spec.shape.dim.add().size = 2
+    expected_tensor_spec.shape.dim.add().size = 3
+    expected_tensor_spec.name = ""
     expected_tensor_spec.dtype = dtypes.int64.as_datatype_enum
     self.assertEqual(expected, encoded)
     decoded = self._coder.decode_proto(encoded)

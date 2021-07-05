@@ -1,24 +1,24 @@
 # Description:
 # TensorFlow Lite Java API.
 
-package(default_visibility = [
-    "//tensorflow/lite/java/ovic:__pkg__",
-])
-
-licenses(["notice"])  # Apache 2.0
-
+load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("//tensorflow/java:build_defs.bzl", "JAVACOPTS")
 load("//tensorflow/lite:build_def.bzl", "tflite_jni_binary")
 load("//tensorflow/lite/java:aar_with_jni.bzl", "aar_with_jni")
 
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],  # Apache 2.0
+)
+
 JAVA_SRCS = glob([
     "src/main/java/org/tensorflow/lite/*.java",
-])
+]) + ["//tensorflow/lite/delegates/nnapi/java/src/main/java/org/tensorflow/lite/nnapi:nnapi_delegate_src"]
 
 # Building tensorflow-lite.aar including 4 variants of .so
 # To build an aar for release, run below command:
-# bazel build --cxxopt='--std=c++11' -c opt --fat_apk_cpu=x86,x86_64,arm64-v8a,armeabi-v7a \
-# tensorflow/lite/java:tensorflow-lite
+# bazel build --cxxopt='-std=c++11' -c opt --fat_apk_cpu=x86,x86_64,arm64-v8a,armeabi-v7a \
+#   tensorflow/lite/java:tensorflow-lite
 aar_with_jni(
     name = "tensorflow-lite",
     android_library = ":tensorflowlite",
@@ -30,11 +30,19 @@ aar_with_jni(
     android_library = ":tensorflowlite_flex",
 )
 
+# EXPERIMENTAL: AAR target for GPU acceleration. Note that this .aar contains
+# *only* the GPU delegate; clients must also include the core `tensorflow-lite`
+# runtime.
+aar_with_jni(
+    name = "tensorflow-lite-gpu",
+    android_library = ":tensorflowlite_gpu",
+)
+
 android_library(
     name = "tensorflowlite",
     srcs = JAVA_SRCS,
     manifest = "AndroidManifest.xml",
-    visibility = ["//visibility:public"],
+    proguard_specs = ["proguard.flags"],
     deps = [
         ":tensorflowlite_native",
         "@org_checkerframework_qual",
@@ -46,9 +54,24 @@ android_library(
     name = "tensorflowlite_flex",
     srcs = JAVA_SRCS,
     manifest = "AndroidManifest.xml",
-    visibility = ["//visibility:public"],
+    proguard_specs = ["proguard.flags"],
     deps = [
         ":tensorflowlite_native_flex",
+        "@org_checkerframework_qual",
+    ],
+)
+
+# EXPERIMENTAL: Android target target for GPU acceleration. Note that this
+# library contains *only* the GPU delegate and its Java wrapper; clients must
+# also include the core `tensorflowlite` runtime.
+android_library(
+    name = "tensorflowlite_gpu",
+    srcs = ["//tensorflow/lite/delegates/gpu/java/src/main/java/org/tensorflow/lite/gpu:gpu_delegate"],
+    manifest = "AndroidManifest.xml",
+    proguard_specs = ["proguard.flags"],
+    deps = [
+        ":tensorflowlite_java",
+        ":tensorflowlite_native_gpu",
         "@org_checkerframework_qual",
     ],
 )
@@ -56,7 +79,7 @@ android_library(
 android_library(
     name = "tensorflowlite_java",
     srcs = JAVA_SRCS,
-    visibility = ["//visibility:public"],
+    proguard_specs = ["proguard.flags"],
     deps = [
         "@org_checkerframework_qual",
     ],
@@ -66,7 +89,6 @@ java_library(
     name = "tensorflowlitelib",
     srcs = JAVA_SRCS,
     javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
     deps = [
         ":libtensorflowlite_jni.so",
         "@org_checkerframework_qual",
@@ -78,7 +100,6 @@ java_library(
     name = "tensorflowlitelib_flex",
     srcs = JAVA_SRCS,
     javacopts = JAVACOPTS,
-    visibility = ["//visibility:public"],
     deps = [
         ":libtensorflowlite_flex_jni.so",
         "@org_checkerframework_qual",
@@ -90,7 +111,11 @@ java_test(
     size = "small",
     srcs = ["src/test/java/org/tensorflow/lite/TensorFlowLiteTest.java"],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
     test_class = "org.tensorflow.lite.TensorFlowLiteTest",
+    visibility = ["//visibility:private"],
     deps = [
         ":tensorflowlitelib",
         "@com_google_truth",
@@ -103,7 +128,11 @@ java_test(
     size = "small",
     srcs = ["src/test/java/org/tensorflow/lite/DataTypeTest.java"],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
     test_class = "org.tensorflow.lite.DataTypeTest",
+    visibility = ["//visibility:private"],
     deps = [
         ":tensorflowlitelib",
         "@com_google_truth",
@@ -116,16 +145,22 @@ java_test(
     size = "small",
     srcs = ["src/test/java/org/tensorflow/lite/NativeInterpreterWrapperTest.java"],
     data = [
+        # The files named as <data_type>.bin reshape the incoming tensor from (2, 8, 8, 3) to (2, 4, 4, 12).
         "src/testdata/add.bin",
         "src/testdata/int32.bin",
         "src/testdata/int64.bin",
         "src/testdata/invalid_model.bin",
         "src/testdata/quantized.bin",
+        "src/testdata/string.bin",
         "src/testdata/uint8.bin",
         "src/testdata/with_custom_op.lite",
     ],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
     test_class = "org.tensorflow.lite.NativeInterpreterWrapperTest",
+    visibility = ["//visibility:private"],
     deps = [
         ":tensorflowlitelib",
         "@com_google_truth",
@@ -137,13 +172,19 @@ java_test(
 java_test(
     name = "InterpreterTest",
     size = "small",
-    srcs = ["src/test/java/org/tensorflow/lite/InterpreterTest.java"],
+    srcs = [
+        "src/test/java/org/tensorflow/lite/InterpreterTest.java",
+        "src/test/java/org/tensorflow/lite/TestUtils.java",
+    ],
     data = [
         "src/testdata/add.bin",
         "//tensorflow/lite:testdata/multi_add.bin",
         "//tensorflow/lite:testdata/multi_add_flex.bin",
     ],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
     test_class = "org.tensorflow.lite.InterpreterTest",
     visibility = ["//visibility:private"],
     deps = [
@@ -162,6 +203,13 @@ java_test(
         "//tensorflow/lite:testdata/multi_add_flex.bin",
     ],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_cuda_on_cpu_tap",  # CUDA + flex is not officially supported.
+        "no_gpu",  # GPU + flex is not officially supported.
+        "no_oss",  # Currently requires --config=monolithic, b/118895218.
+        # TODO(b/121204962): Re-enable test after fixing memory leaks.
+        "noasan",
+    ],
     test_class = "org.tensorflow.lite.InterpreterFlexTest",
     visibility = ["//visibility:private"],
     deps = [
@@ -179,7 +227,11 @@ java_test(
         "src/testdata/add.bin",
     ],
     javacopts = JAVACOPTS,
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
     test_class = "org.tensorflow.lite.TensorTest",
+    visibility = ["//visibility:private"],
     deps = [
         ":tensorflowlitelib",
         "@com_google_truth",
@@ -188,28 +240,46 @@ java_test(
 )
 
 filegroup(
+    name = "portable_tests",
+    srcs = [
+        "src/test/java/org/tensorflow/lite/InterpreterMobileNetTest.java",
+        "src/test/java/org/tensorflow/lite/InterpreterTest.java",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "libtensorflowlite_jni",
     srcs = select({
         "//conditions:default": [":libtensorflowlite_jni.so"],
     }),
-    visibility = ["//visibility:public"],
+    tags = [
+        "no_mac",  # TODO(b/122888913): libtensorflowlite_test_jni broke on mac.
+    ],
 )
 
 cc_library(
     name = "tensorflowlite_native",
     srcs = ["libtensorflowlite_jni.so"],
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
 )
 
 cc_library(
     name = "tensorflowlite_native_flex",
     srcs = ["libtensorflowlite_flex_jni.so"],
-    visibility = ["//visibility:public"],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "tensorflowlite_native_gpu",
+    srcs = ["libtensorflowlite_gpu_jni.so"],
+    visibility = ["//visibility:private"],
 )
 
 tflite_jni_binary(
     name = "libtensorflowlite_jni.so",
     deps = [
+        "//tensorflow/lite/delegates/nnapi/java/src/main/native",
         "//tensorflow/lite/java/src/main/native",
     ],
 )
@@ -219,7 +289,16 @@ tflite_jni_binary(
     name = "libtensorflowlite_flex_jni.so",
     deps = [
         "//tensorflow/lite/delegates/flex:delegate",
+        "//tensorflow/lite/delegates/nnapi/java/src/main/native",
         "//tensorflow/lite/java/src/main/native",
         "//tensorflow/lite/java/src/main/native:init_tensorflow",
+    ],
+)
+
+# EXPERIMENTAL: Native target that supports GPU acceleration.
+tflite_jni_binary(
+    name = "libtensorflowlite_gpu_jni.so",
+    deps = [
+        "//tensorflow/lite/delegates/gpu/java/src/main/native",
     ],
 )

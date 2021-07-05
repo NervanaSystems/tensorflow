@@ -29,12 +29,12 @@ from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import clip_ops
+from tensorflow.python.ops import gen_bitwise_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import parsing_ops
 from tensorflow.python.ops import string_ops
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_tensor
-from tensorflow.python.ops.ragged import ragged_test_util
 from tensorflow.python.platform import googletest
 
 # Constants listing various op types to test.  Each operation
@@ -121,16 +121,22 @@ BINARY_BOOL_OPS = [
     math_ops.logical_xor,
 ]
 UNARY_INT_OPS = [
+    gen_bitwise_ops.invert,
     string_ops.unicode_script,
 ]
 BINARY_INT_OPS = [
+    gen_bitwise_ops.bitwise_and,
+    gen_bitwise_ops.bitwise_or,
+    gen_bitwise_ops.bitwise_xor,
+    gen_bitwise_ops.left_shift,
+    gen_bitwise_ops.right_shift,
     math_ops.truncatediv,
     math_ops.truncatemod,
 ]
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RaggedElementwiseOpsTest(ragged_test_util.RaggedTensorTestCase,
+class RaggedElementwiseOpsTest(test_util.TensorFlowTestCase,
                                parameterized.TestCase):
 
   def assertSameShape(self, x, y):
@@ -461,7 +467,7 @@ class RaggedElementwiseOpsTest(ragged_test_util.RaggedTensorTestCase,
     x = ragged_tensor.convert_to_tensor_or_ragged_tensor(x, dtype=dtypes.int32)
     y = ragged_tensor.convert_to_tensor_or_ragged_tensor(y, dtype=dtypes.int32)
     result = x + y
-    self.assertRaggedEqual(result, expected)
+    self.assertAllEqual(result, expected)
 
   def testElementwiseOpShapeMismatch(self):
     x = ragged_factory_ops.constant([[1, 2, 3], [4, 5]])
@@ -676,11 +682,37 @@ class RaggedElementwiseOpsTest(ragged_test_util.RaggedTensorTestCase,
                   1
           },
           expected=[False, True]),
+      dict(
+          op=array_ops.rank,
+          kwargs={'input': ragged_factory_ops.constant_value([[8, 3], [5]])},
+          expected=2),
+      dict(
+          op=array_ops.size,
+          kwargs={'input': ragged_factory_ops.constant_value([[8, 3], [5]])},
+          expected=3),
+      dict(
+          op=array_ops.size_v2,
+          kwargs={'input': ragged_factory_ops.constant_value([[8, 3], [5]])},
+          expected=3),
+      dict(
+          op=array_ops.squeeze,
+          kwargs={
+              'input': ragged_factory_ops.constant_value([[[1, 2, 3], [4, 5]]]),
+              'axis': [0]
+          },
+          expected=ragged_factory_ops.constant_value([[1, 2, 3], [4, 5]])),
+      dict(
+          op=array_ops.squeeze_v2,
+          kwargs={
+              'input': ragged_factory_ops.constant_value([[[1, 2, 3], [4, 5]]]),
+              'axis': [0]
+          },
+          expected=ragged_factory_ops.constant_value([[1, 2, 3], [4, 5]])),
   ])
   def testRaggedDispatch(self, op, expected, args=(), kwargs=None):
     if kwargs is None: kwargs = {}
     result = op(*args, **kwargs)
-    self.assertRaggedEqual(result, expected)
+    self.assertAllEqual(result, expected)
 
 
 if __name__ == '__main__':

@@ -232,6 +232,13 @@ NodeDef* GetInputNode(const NodeDef& node, const MutableGraphView& graph) {
   return graph.GetRegularFanin(input_port).node;
 }
 
+NodeDef* GetInputNode(const NodeDef& node, const MutableGraphView& graph,
+                      int64 i) {
+  if (node.input_size() <= i) return nullptr;
+  MutableGraphView::InputPort input_port = graph.GetInputPort(node.name(), i);
+  return graph.GetRegularFanin(input_port).node;
+}
+
 void SetUniqueGraphNodeName(StringPiece prefix, GraphDef* graph,
                             NodeDef* node) {
   string name = string(prefix);
@@ -293,6 +300,20 @@ Status EnsureNodeNamesUnique(Graph* g) {
 
   return Status::OK();
 }
-}  // end namespace graph_utils
-}  // end namespace grappler
-}  // end namespace tensorflow
+
+Status GetFetchNode(const MutableGraphView& graph, const GrapplerItem& item,
+                    NodeDef** fetch_node) {
+  if (item.fetch.size() != 1) {
+    return errors::InvalidArgument(
+        "Expected only one fetch node but there were ", item.fetch.size(), ": ",
+        absl::StrJoin(item.fetch, ", "));
+  }
+
+  *fetch_node = graph.GetNode(item.fetch.at(0));
+
+  return Status::OK();
+}
+
+}  // namespace graph_utils
+}  // namespace grappler
+}  // namespace tensorflow

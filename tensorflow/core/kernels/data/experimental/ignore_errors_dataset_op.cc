@@ -45,8 +45,8 @@ class IgnoreErrorsDatasetOp : public UnaryDatasetOpKernel {
 
     std::unique_ptr<IteratorBase> MakeIteratorInternal(
         const string& prefix) const override {
-      return std::unique_ptr<IteratorBase>(
-          new Iterator({this, strings::StrCat(prefix, "::IgnoreErrors")}));
+      return absl::make_unique<Iterator>(
+          Iterator::Params{this, strings::StrCat(prefix, "::IgnoreErrors")});
     }
 
     const DataTypeVector& output_dtypes() const override {
@@ -140,6 +140,8 @@ class IgnoreErrorsDatasetOp : public UnaryDatasetOpKernel {
   };
 };
 
+REGISTER_KERNEL_BUILDER(Name("IgnoreErrorsDataset").Device(DEVICE_CPU),
+                        IgnoreErrorsDatasetOp);
 REGISTER_KERNEL_BUILDER(
     Name("ExperimentalIgnoreErrorsDataset").Device(DEVICE_CPU),
     IgnoreErrorsDatasetOp);

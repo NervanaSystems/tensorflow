@@ -89,7 +89,7 @@ static void CreateLoopInvariantCopy(
 
     HloInstruction* next_operand =
         frame->instruction->mutable_operand(frame->operand_index++);
-    if (hoisted_instructions->count(next_operand) ||
+    if (hoisted_instructions->contains(next_operand) ||
         next_operand == while_body_param) {
       continue;
     }
@@ -219,18 +219,19 @@ WhileLoopInvariantCodeMotion::TryHoistingInvariantInstructionsFromWhileBody(
 
       for (auto* operand : instruction->operands()) {
         ShapeUtil::ForEachSubshape(
-            operand->shape(),
-            [&input_size](const Shape& subshape, const ShapeIndex& /*index*/) {
+            operand->shape(), [&input_size, this](const Shape& subshape,
+                                                  const ShapeIndex& /*index*/) {
               if (subshape.IsArray()) {
-                input_size += ShapeUtil::ByteSizeOfElements(subshape);
+                input_size += shape_size_function_(subshape);
               }
             });
       }
       ShapeUtil::ForEachSubshape(
           instruction->shape(),
-          [&output_size](const Shape& subshape, const ShapeIndex& /*index*/) {
+          [&output_size, this](const Shape& subshape,
+                               const ShapeIndex& /*index*/) {
             if (subshape.IsArray()) {
-              output_size += ShapeUtil::ByteSizeOfElements(subshape);
+              output_size += shape_size_function_(subshape);
             }
           });
 
@@ -241,7 +242,7 @@ WhileLoopInvariantCodeMotion::TryHoistingInvariantInstructionsFromWhileBody(
 
     auto is_invariant = [&](HloInstruction* op) {
       return hoisted_instructions.find(op) != hoisted_instructions.end() ||
-             unhoisted_invariant_instructions.count(op) ||
+             unhoisted_invariant_instructions.contains(op) ||
              op->opcode() == HloOpcode::kConstant;
     };
 

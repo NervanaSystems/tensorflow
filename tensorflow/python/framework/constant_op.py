@@ -23,7 +23,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import six
 
 from tensorflow.core.framework import attr_value_pb2
@@ -95,6 +94,7 @@ def convert_to_eager_tensor(value, ctx, dtype=None):
       dtype = dtype.as_datatype_enum
     except AttributeError:
       dtype = dtypes.as_dtype(dtype).as_datatype_enum
+  ctx.ensure_initialized()
   device = ctx.device_name
   handle = ctx._handle  # pylint: disable=protected-access
   if isinstance(value, (float,) + six.integer_types):
@@ -306,10 +306,6 @@ def _constant_tensor_conversion_function(v, dtype=None, name=None,
 
 ops.register_tensor_conversion_function(
     (list, tuple), _constant_tensor_conversion_function, 100)
-ops.register_tensor_conversion_function(
-    np.ndarray, _constant_tensor_conversion_function, 100)
-ops.register_tensor_conversion_function(
-    np.generic, _constant_tensor_conversion_function, 100)
 ops.register_tensor_conversion_function(
     object, _constant_tensor_conversion_function, 200)
 

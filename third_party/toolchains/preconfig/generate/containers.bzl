@@ -1,4 +1,11 @@
+"""SHA 256 values for each image."""
 container_digests = {
-    "cuda9.0-cudnn7-ubuntu14.04": "sha256:c43ed5341dd765042e0bbd1bf50fadeedd649d1e0c34d81999cb6ce30916cb95",
-    "cuda10.0-cudnn7-ubuntu14.04": "sha256:919e75247743ae1244d5d72ee9f18090379d4a9035e5853010f6d59d87cd2e8b",
+    "ubuntu16.04": "sha256:b90dcf2f35f3354909f4491bdf019c110b4b4d95ef0395ebf178bc5d523a4208",
+    "centos6": "sha256:d09c12fb26fbbe8398b4973260c75172eb67d509dae9d6f4ad54279b7d6b0494",
+    "cuda10.0-cudnn7-ubuntu14.04": "sha256:d433e1221f802dac393bc8652fabcc63aa46896cd920bb888ae0e2002fe6b756",
+    "cuda10.0-cudnn7-centos7": "sha256:a453b7147a60928a8345689eae48916a746b3578b5e831bfa151f0529d469c88",
+    "cuda10.0-cudnn7-centos6": "sha256:a1909ba09c703340ee0074ce63dd94fe8fea48035a25264677907a609e2375e0",
+    "cuda10.1-cudnn7-centos6": "sha256:454b899657e87893ee5e68dc0f87df59b6a0a7418ae09cafcc3dd65ac71feca9",
+    "cuda10.0-cudnn7-ubuntu16.04-manylinux2010": "sha256:eedcedfe63a778068bf725f9ffa425646725faac9ba96a57abfad307e832dcf9",
+    "rocm-ubuntu16.04": "sha256:2df35a0b7f7513b4ca820a12792e98ecafafabd1076300ef26f89386277c10cc",
 }

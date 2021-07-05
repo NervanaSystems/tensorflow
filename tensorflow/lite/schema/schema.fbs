@@ -64,9 +64,20 @@ table QuantizationParameters {
   scale:[float];  // For dequantizing the tensor's values.
   zero_point:[long];
 
-  // If this is not none, the quantization parameters above are ignored and the
-  // value of the QuantizationDetails union below should be used.
+  // If this is not none, the other quantization parameters (i.e. min, max,
+  // scale, zero_point fields above) are ignored and the value of the
+  // QuantizationDetails union should be used.
   details:QuantizationDetails;
+
+  // Specifies the dimension of the Tensor's shape that the scales and
+  // zero_points correspond to. For example, a tensor t, with dims=[4, 3, 2, 1]
+  // with quantization params:
+  //   scale=[1.0, 2.0, 3.0], zero_point=[1, 2, 3], quantization_dimension=1
+  // will be quantized across the second dimension of t.
+  //   t[:, 0, :, :] will have scale[0]=1.0, zero_point[0]=1
+  //   t[:, 1, :, :] will have scale[1]=2.0, zero_point[0]=2
+  //   t[:, 2, :, :] will have scale[2]=3.0, zero_point[0]=3
+  quantized_dimension:int;
 }
 
 table Tensor {
@@ -206,6 +217,20 @@ enum BuiltinOperator : byte {
   ABS = 101,
   SPLIT_V = 102,
   UNIQUE = 103,
+  CEIL = 104,
+  REVERSE_V2 = 105,
+  ADD_N = 106,
+  GATHER_ND = 107,
+  COS = 108,
+  WHERE = 109,
+  RANK = 110,
+  ELU = 111,
+  REVERSE_SEQUENCE = 112,
+  MATRIX_DIAG = 113,
+  QUANTIZE = 114,
+  MATRIX_SET_DIAG = 115,
+  ROUND = 116,
+  HARD_SWISH = 117,
 }
 
 // Options for the builtin operators.
@@ -290,6 +315,17 @@ union BuiltinOptions {
   AbsOptions,
   SplitVOptions,
   UniqueOptions,
+  ReverseV2Options,
+  AddNOptions,
+  GatherNdOptions,
+  CosOptions,
+  WhereOptions,
+  RankOptions,
+  ReverseSequenceOptions,
+  MatrixDiagOptions,
+  QuantizeOptions,
+  MatrixSetDiagOptions,
+  HardSwishOptions
 }
 
 enum Padding : byte { SAME, VALID }
@@ -384,6 +420,11 @@ table FullyConnectedOptions {
 
   // Parameters for FullyConnected version 2 or above.
   weights_format:FullyConnectedOptionsWeightsFormat = DEFAULT;
+
+  // Parameters for FullyConnected version 5 or above.
+  // If set to true, then the number of dimension is preserved. Furthermore,
+  // all but the last dimension of the input and output shapes will be equal.
+  keep_num_dims: bool;
 }
 
 table SoftmaxOptions {
@@ -533,6 +574,9 @@ table TransposeOptions {
 table ExpOptions {
 }
 
+table CosOptions {
+}
+
 table ReducerOptions {
   keep_dims: bool;
 }
@@ -627,6 +671,9 @@ table ShapeOptions {
   out_type : TensorType;
 }
 
+table RankOptions {
+}
+
 table PowOptions {
 }
 
@@ -655,6 +702,9 @@ table OneHotOptions {
 table AbsOptions {
 }
 
+
+table HardSwishOptions {
+}
 
 table LogicalAndOptions {
 }
@@ -707,6 +757,32 @@ table UniqueOptions {
   idx_out_type:TensorType = INT32;
 }
 
+table ReverseV2Options {
+}
+
+table AddNOptions {
+}
+
+table GatherNdOptions {
+}
+
+table WhereOptions {
+}
+
+table ReverseSequenceOptions {
+  seq_dim:int;
+  batch_dim:int = 0;
+}
+
+table MatrixDiagOptions {
+}
+
+table QuantizeOptions {
+}
+
+table MatrixSetDiagOptions {
+}
+
 // An OperatorCode can be an enum value (BuiltinOperator) if the operator is a
 // builtin, or a string if the operator is custom.
 table OperatorCode {
@@ -748,6 +824,11 @@ table Operator {
   // If the list is empty, no variable is mutated in this operator.
   // The list either has the same length as `inputs`, or is empty.
   mutating_variable_inputs:[bool];
+
+  // Intermediate tensors record the tensor indices that are internal to an Op.
+  // Those tensors contains quantization information for complicated ops such as
+  // LSTM.
+  intermediates:[int];
 }
 
 // The root type, defining a subgraph, which typically represents an entire
@@ -778,6 +859,13 @@ table Buffer {
   data:[ubyte] (force_align: 16);
 }
 
+table Metadata {
+  // A human readable string to uniquely identify a Metadata.
+  name:string;
+  // An index to the buffers table.
+  buffer:uint;
+}
+
 table Model {
   // Version of the schema.
   version:uint;
@@ -800,8 +888,12 @@ table Model {
   // their buffer.
   buffers:[Buffer];
 
-  // Metadata about the model.  Indirects into the existings buffers list.
+  // Metadata about the model. Indirects into the existings buffers list.
+  // Deprecated, prefer to use metadata field.
   metadata_buffer:[int];
+
+  // Metadata about the model.
+  metadata:[Metadata];
 }
 
 root_type Model;

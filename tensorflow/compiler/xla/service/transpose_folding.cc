@@ -130,8 +130,7 @@ bool FoldTransposeIntoConvolution(InstructionOperandsPair pair) {
 
   HloInstruction* new_lhs;
   const int64 kLhsIdx = 0;
-  if (std::find(operand_indices.begin(), operand_indices.end(), kLhsIdx) !=
-      operand_indices.end()) {
+  if (absl::c_linear_search(operand_indices, kLhsIdx)) {
     HloInstruction& transpose = *convolution.mutable_operand(kLhsIdx);
     const auto& transpose_dimensions = transpose.dimensions();
     HloInstruction& transpose_operand = *transpose.mutable_operand(0);
@@ -154,8 +153,7 @@ bool FoldTransposeIntoConvolution(InstructionOperandsPair pair) {
 
   HloInstruction* new_rhs;
   const int64 kRhsIdx = 1;
-  if (std::find(operand_indices.begin(), operand_indices.end(), kRhsIdx) !=
-      operand_indices.end()) {
+  if (absl::c_linear_search(operand_indices, kRhsIdx)) {
     HloInstruction& transpose = *convolution.mutable_operand(kRhsIdx);
     const auto& transpose_dimensions = transpose.dimensions();
     HloInstruction& transpose_operand = *transpose.mutable_operand(0);
@@ -199,8 +197,8 @@ StatusOr<bool> TransposeFolding::Run(HloModule* module) {
   // opportunities before actually folding them.
   std::vector<std::pair<HloInstruction*, OperandIndices>> foldable_dots;
   std::vector<std::pair<HloInstruction*, OperandIndices>> foldable_convolutions;
-  auto visit_fn = [this, &foldable_dots,
-                   &foldable_convolutions](HloInstruction* instruction) {
+  FunctionVisitor visit_fn([this, &foldable_dots, &foldable_convolutions](
+                               HloInstruction* instruction) {
     {
       OperandIndices operand_indices =
           CanFoldOperandsIntoDot(*instruction, transposable_gemm_operands_);
@@ -217,10 +215,10 @@ StatusOr<bool> TransposeFolding::Run(HloModule* module) {
       }
     }
     return Status::OK();
-  };
+  });
 
   for (auto* comp : module->MakeNonfusionComputations()) {
-    TF_RETURN_IF_ERROR(comp->Accept(visit_fn));
+    TF_RETURN_IF_ERROR(comp->Accept(&visit_fn));
   }
 
   bool changed = false;

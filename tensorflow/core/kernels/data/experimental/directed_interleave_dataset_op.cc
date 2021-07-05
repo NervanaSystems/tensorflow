@@ -93,8 +93,8 @@ class DirectedInterleaveDatasetOp : public DatasetOpKernel {
 
     std::unique_ptr<IteratorBase> MakeIteratorInternal(
         const string& prefix) const override {
-      return std::unique_ptr<IteratorBase>(new Iterator(
-          {this, strings::StrCat(prefix, "::DirectedInterleave")}));
+      return absl::make_unique<Iterator>(Iterator::Params{
+          this, strings::StrCat(prefix, "::DirectedInterleave")});
     }
 
     const DataTypeVector& output_dtypes() const override {
@@ -277,6 +277,8 @@ class DirectedInterleaveDatasetOp : public DatasetOpKernel {
   };
 };
 
+REGISTER_KERNEL_BUILDER(Name("DirectedInterleaveDataset").Device(DEVICE_CPU),
+                        DirectedInterleaveDatasetOp);
 REGISTER_KERNEL_BUILDER(
     Name("ExperimentalDirectedInterleaveDataset").Device(DEVICE_CPU),
     DirectedInterleaveDatasetOp);

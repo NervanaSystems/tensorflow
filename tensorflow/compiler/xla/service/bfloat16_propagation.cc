@@ -355,12 +355,14 @@ void BFloat16Propagation::DetermineInstructionPrecision(HloInstruction* hlo,
   }
 
   // Do not change precision for instructions related to entry and exit of a
-  // computation, side-effecting instructions, and control flow, because this
-  // pass might break the interfaces or assumptions for them.
-  if (hlo->opcode() == HloOpcode::kCustomCall ||   //
-      hlo->opcode() == HloOpcode::kCall ||         //
-      hlo->opcode() == HloOpcode::kConditional ||  //
-      hlo->HasSideEffectNoRecurse() ||             //
+  // computation, side-effecting instructions, control flow, and
+  // bitcast-convert, because this pass might break the interfaces or
+  // assumptions for them.
+  if (hlo->opcode() == HloOpcode::kCustomCall ||      //
+      hlo->opcode() == HloOpcode::kCall ||            //
+      hlo->opcode() == HloOpcode::kConditional ||     //
+      hlo->opcode() == HloOpcode::kBitcastConvert ||  //
+      hlo->HasSideEffectNoRecurse() ||                //
       (hlo->opcode() == HloOpcode::kParameter && skip_parameters)) {
     return;
   }
@@ -674,11 +676,13 @@ Status BFloat16Propagation::ResolveConvertedConstants(HloModule* module) {
       if (hlo->opcode() != HloOpcode::kConstant) {
         continue;
       }
-      if (!ShapeUtil::Equal(hlo->literal().shape(), hlo->shape())) {
+      if (!Shape::Equal().MinorToMajorOnlyInLayout()(hlo->literal().shape(),
+                                                     hlo->shape())) {
         TF_ASSIGN_OR_RETURN(auto converted_literal,
                             hlo->literal().ConvertToShape(hlo->shape()));
         auto new_constant = computation->AddInstruction(
             HloInstruction::CreateConstant(std::move(converted_literal)));
+        UpdateLayout(new_constant->mutable_shape());
         TF_RETURN_IF_ERROR(hlo->ReplaceAllUsesWith(new_constant));
       }
     }
@@ -797,6 +801,7 @@ StatusOr<bool> BFloat16Propagation::Run(HloModule* module) {
       auto subshape = entry.first;
       CHECK_EQ(subshape->element_type(), F32);
       subshape->set_element_type(BF16);
+      UpdateLayout(subshape);
       changed_ = true;
     }
   }

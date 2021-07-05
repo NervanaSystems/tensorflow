@@ -31,7 +31,6 @@ from tensorflow.python.keras.optimizer_v2.rmsprop import RMSprop
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
 from tensorflow.python.training import gradient_descent
-from tensorflow.python.training.rmsprop import RMSPropOptimizer
 
 
 @keras_parameterized.run_all_keras_modes
@@ -88,6 +87,7 @@ class CuDNNTest(keras_parameterized.TestCase):
     self.assertEqual(len(state), num_states)
     model = keras.models.Model(inputs, state[0])
     model.run_eagerly = testing_utils.should_run_eagerly()
+    model._run_distributed = testing_utils.should_run_distributed()
 
     inputs = np.random.random((num_samples, timesteps, input_size))
     state = model.predict(inputs)
@@ -142,9 +142,11 @@ class CuDNNTest(keras_parameterized.TestCase):
     self.assertIn(initial_state[0], layer._inbound_nodes[0].input_tensors)
 
     model = keras.models.Model([inputs] + initial_state, output)
-    model.compile(loss='categorical_crossentropy',
-                  optimizer=RMSprop(learning_rate=0.001),
-                  run_eagerly=testing_utils.should_run_eagerly())
+    model.compile(
+        loss='categorical_crossentropy',
+        optimizer=RMSprop(learning_rate=0.001),
+        run_eagerly=testing_utils.should_run_eagerly(),
+        run_distributed=testing_utils.should_run_distributed())
 
     inputs = np.random.random((num_samples, timesteps, input_size))
     initial_state = [
@@ -322,6 +324,8 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
         layers = [keras.layers.InputLayer(input_shape),
                   model] if (i == 1) else [model]
         model = keras.models.Sequential(layers)
+        if i > 1:
+          model.build((None,) + input_shape)
       return model
 
     # example: make_nested_func_model((1,), Dense(10), level=2).summary()
@@ -408,8 +412,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
     model.add(
         keras.layers.Bidirectional(
             rnn(output_dim), merge_mode=mode, input_shape=(None, dim)))
-    model.compile(
-        loss='mse', optimizer=RMSPropOptimizer(learning_rate=0.001))
+    model.compile(loss='mse', optimizer='rmsprop')
     model.fit(x, y, epochs=1, batch_size=1)
 
     # test config
@@ -425,8 +428,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
             merge_mode=mode,
             input_shape=(None, dim)))
     model.add(keras.layers.Bidirectional(rnn(output_dim), merge_mode=mode))
-    model.compile(
-        loss='mse', optimizer=RMSPropOptimizer(learning_rate=0.001))
+    model.compile(loss='mse', optimizer=R'rmsprop')
     model.fit(x, y, epochs=1, batch_size=1)
 
     # test with functional API
@@ -435,8 +437,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
         rnn(output_dim), merge_mode=mode)(
             inputs)
     model = keras.Model(inputs, outputs)
-    model.compile(
-        loss='mse', optimizer=RMSPropOptimizer(learning_rate=0.001))
+    model.compile(loss='mse', optimizer=R'rmsprop')
     model.fit(x, y, epochs=1, batch_size=1)
 
     # Bidirectional and stateful
@@ -445,8 +446,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
         rnn(output_dim, stateful=True), merge_mode=mode)(
             inputs)
     model = keras.Model(inputs, outputs)
-    model.compile(
-        loss='mse', optimizer=RMSPropOptimizer(learning_rate=0.001))
+    model.compile(loss='mse', optimizer='rmsprop')
     model.fit(x, y, epochs=1, batch_size=1)
 
   @test_util.run_gpu_only
@@ -467,7 +467,7 @@ class CuDNNV1OnlyTest(keras_parameterized.TestCase):
 
     def assert_not_compatible(src, dest, message):
       with self.assertRaises(ValueError) as ex:
-        keras.engine.saving.preprocess_weights_for_loading(
+        keras.saving.preprocess_weights_for_loading(
             dest,
             get_layer_weights(src))
       self.assertIn(message, str(ex.exception))
